@@ -1,5 +1,6 @@
 package com.tx4hz.taskmaster.controller;
 
+import com.tx4hz.taskmaster.dto.AuthUserRequest;
 import com.tx4hz.taskmaster.dto.CreateUserRequest;
 import com.tx4hz.taskmaster.dto.UpdateUserRequest;
 import com.tx4hz.taskmaster.dto.UserDTO;
@@ -20,10 +21,15 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDTO createUser(@Valid @RequestBody CreateUserRequest request) throws IOException {
+    public UserDTO createUser(@Valid @RequestBody CreateUserRequest request) throws IllegalStateException {
         return userService.createUser(request);
+    }
+
+    @PostMapping("/login")
+    public String authUser(@RequestBody AuthUserRequest  userDTO) {
+        return userService.authUser(userDTO);
     }
 
     @GetMapping("/{id}")
