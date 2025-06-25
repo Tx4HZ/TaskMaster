@@ -1,9 +1,7 @@
 package com.tx4hz.taskmaster.service;
 
-import com.tx4hz.taskmaster.dto.AuthUserRequest;
-import com.tx4hz.taskmaster.dto.CreateUserRequest;
-import com.tx4hz.taskmaster.dto.UpdateUserRequest;
-import com.tx4hz.taskmaster.dto.UserDTO;
+import com.tx4hz.taskmaster.dto.*;
+import com.tx4hz.taskmaster.model.Profile;
 import com.tx4hz.taskmaster.model.User;
 import com.tx4hz.taskmaster.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -100,10 +98,24 @@ public class UserService {
     }
 
     private UserDTO convertToDto(User user) {
-        UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setEmail(user.getEmail());
-        return dto;
+        ProfileDTO profileDTO = null;
+        if (user.getProfile() != null) {
+            Profile profile = user.getProfile();
+            profileDTO = new ProfileDTO(
+                    profile.getId(),
+                    profile.getName(),
+                    profile.getSurname(),
+                    profile.getPatronymic(),
+                    profile.getBirthday(),
+                    profile.getStatus(),
+                    profile.getTechnologies()
+            );
+        }
+        return new UserDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                profileDTO
+        );
     }
 }

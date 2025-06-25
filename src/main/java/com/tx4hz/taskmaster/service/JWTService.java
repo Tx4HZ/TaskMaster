@@ -42,7 +42,7 @@ public class JWTService {
     }
 
     private SecretKey getKey() {
-//        return Jwts.SIG.HS256.key().build();
+    //    return Jwts.SIG.HS256.key().build();
         return key;
     }
 
