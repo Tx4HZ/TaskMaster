@@ -1,12 +1,11 @@
 package com.tx4hz.taskmaster.controller;
 
+import com.tx4hz.taskmaster.dto.CreateProfileDTO;
+import com.tx4hz.taskmaster.dto.ProfileDTO;
 import com.tx4hz.taskmaster.model.Profile;
 import com.tx4hz.taskmaster.service.ProfileService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/profiles")
@@ -19,8 +18,12 @@ public class ProfileController {
     }
 
     @PostMapping
-    public ResponseEntity<Profile> getProfile(@RequestBody Profile profile) {
-        Profile createdProfile = profileService.createProfile(profile);
-        return ResponseEntity.ok(createdProfile);
+    public ProfileDTO createProfile(@RequestBody CreateProfileDTO createProfileDTO) {
+        return profileService.createProfile(createProfileDTO);
+    }
+
+    @PutMapping
+    public ProfileDTO updateProfile(@RequestBody CreateProfileDTO updateProfile) {
+        return profileService.updateProfile(updateProfile);
     }
 }

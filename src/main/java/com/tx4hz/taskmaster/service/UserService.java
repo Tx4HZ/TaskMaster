@@ -4,6 +4,7 @@ import com.tx4hz.taskmaster.dto.*;
 import com.tx4hz.taskmaster.model.Profile;
 import com.tx4hz.taskmaster.model.User;
 import com.tx4hz.taskmaster.repository.UserRepository;
+import com.tx4hz.taskmaster.service.mapper.UserMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,26 +21,24 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
+    private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JWTService jwtService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JWTService jwtService, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.userMapper = userMapper;
     }
 
-    public UserDTO createUser(CreateUserRequest request) throws IllegalStateException {
-        if (userRepository.existsByUsername(request.getUsername()) && userRepository.existsByEmail(request.getEmail())){
+    public UserDTO createUser(CreateUserDTO createUserDTO) {
+        if (userRepository.existsByUsername(createUserDTO.getUsername()) && userRepository.existsByEmail(createUserDTO.getEmail())){
             throw new IllegalStateException("You cannot use this data");
         }
-
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        User saveUser = userRepository.save(user);
-        return convertToDto(saveUser);
+        createUserDTO.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
+        User user = userMapper.toEntity(createUserDTO);
+        User savedUser = userRepository.save(user);
+        return userMapper.toDTO(savedUser);
     }
 
     public String authUser(AuthUserRequest userDTO) {
@@ -52,18 +51,18 @@ public class UserService {
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found by " + id + " id"));
-        return convertToDto(user);
+        return userMapper.toDTO(user);
     }
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(this::convertToDto)
+                .map(userMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public UserDTO updateUser(Long id, UpdateUserRequest request) {
+    public UserDTO updateUser(Long id, CreateUserDTO request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found with id: " + id));
 
@@ -86,7 +85,7 @@ public class UserService {
         }
 
         User updatedUser = userRepository.save(user);
-        return convertToDto(updatedUser);
+        return userMapper.toDTO(updatedUser);
     }
 
     @Transactional
@@ -95,27 +94,5 @@ public class UserService {
             throw new IllegalStateException("User not found with id: " + id);
         }
         userRepository.deleteById(id);
-    }
-
-    private UserDTO convertToDto(User user) {
-        ProfileDTO profileDTO = null;
-        if (user.getProfile() != null) {
-            Profile profile = user.getProfile();
-            profileDTO = new ProfileDTO(
-                    profile.getId(),
-                    profile.getName(),
-                    profile.getSurname(),
-                    profile.getPatronymic(),
-                    profile.getBirthday(),
-                    profile.getStatus(),
-                    profile.getTechnologies()
-            );
-        }
-        return new UserDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                profileDTO
-        );
     }
 }
