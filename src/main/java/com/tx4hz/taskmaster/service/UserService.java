@@ -31,6 +31,13 @@ public class UserService {
         this.userMapper = userMapper;
     }
 
+    /**
+     * Creates a new user with the provided details, encoding the password and checking for duplicates.
+     *
+     * @param createUserDTO DTO containing user creation data
+     * @return UserDTO of the created user
+     * @throws IllegalStateException if username or email is already taken
+     */
     public UserDTO createUser(CreateUserDTO createUserDTO) {
         if (userRepository.existsByUsername(createUserDTO.getUsername()) && userRepository.existsByEmail(createUserDTO.getEmail())){
             throw new IllegalStateException("You cannot use this data");
@@ -41,19 +48,37 @@ public class UserService {
         return userMapper.toDTO(savedUser);
     }
 
-    public String authUser(AuthUserRequest userDTO) {
+    /**
+     * Authenticates a user and generates a JWT token if successful.
+     *
+     * @param userDTO DTO containing username and password
+     * @return JWT token if authentication is successful, "Fail" otherwise
+     */
+    public String authUser(CreateUserDTO userDTO) {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword()));
 
         return authentication.isAuthenticated() ? jwtService.generateToken(userDTO.getUsername()) : "Fail";
     }
 
+    /**
+     * Retrieves a user by their ID.
+     *
+     * @param id User ID
+     * @return UserDTO of the found user
+     * @throws IllegalStateException if user is not found
+     */
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found by " + id + " id"));
         return userMapper.toDTO(user);
     }
 
+    /**
+     * Retrieves all users.
+     *
+     * @return List of UserDTOs
+     */
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -61,6 +86,14 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Updates an existing user's details.
+     *
+     * @param id      User ID
+     * @param request DTO containing updated user data
+     * @return Updated UserDTO
+     * @throws IllegalStateException if user is not found or data is invalid
+     */
     @Transactional
     public UserDTO updateUser(Long id, CreateUserDTO request) {
         User user = userRepository.findById(id)
@@ -88,6 +121,12 @@ public class UserService {
         return userMapper.toDTO(updatedUser);
     }
 
+    /**
+     * Deletes a user by their ID.
+     *
+     * @param id User ID
+     * @throws IllegalStateException if user is not found
+     */
     @Transactional
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
