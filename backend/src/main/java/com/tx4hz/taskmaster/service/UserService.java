@@ -1,7 +1,6 @@
 package com.tx4hz.taskmaster.service;
 
 import com.tx4hz.taskmaster.dto.*;
-import com.tx4hz.taskmaster.model.Profile;
 import com.tx4hz.taskmaster.model.User;
 import com.tx4hz.taskmaster.repository.UserRepository;
 import com.tx4hz.taskmaster.service.mapper.UserMapper;
@@ -58,7 +57,7 @@ public class UserService {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword()));
 
-        return authentication.isAuthenticated() ? jwtService.generateToken(userDTO.getUsername()) : "Fail";
+        return authentication.isAuthenticated() ? jwtService.generateToken(userDTO) : "Fail";
     }
 
     /**

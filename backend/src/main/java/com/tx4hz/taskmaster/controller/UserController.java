@@ -47,10 +47,15 @@ public class UserController {
      * @return JWT token if authentication is successful, "Fail" otherwise
      */
     @PostMapping("/login")
-    public ResponseEntity<String> authUser(@RequestBody CreateUserDTO  userDTO) {
-        String token = userService.authUser(userDTO);
-        return ResponseEntity.status(token.equals("Fail") ? HttpStatus.UNAUTHORIZED : HttpStatus.OK)
-                .body(token);
+    public ResponseEntity<EntityResponse<String>> authUser(@RequestBody CreateUserDTO  userDTO) {
+        try {
+            String token = userService.authUser(userDTO);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(EntityResponse.success(token));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(EntityResponse.error("Incorrect login or password: " + e.getMessage()));
+        }
     }
 
     /**

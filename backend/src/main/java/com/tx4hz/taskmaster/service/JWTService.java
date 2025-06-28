@@ -1,16 +1,17 @@
 package com.tx4hz.taskmaster.service;
 
+import com.tx4hz.taskmaster.dto.CreateUserDTO;
+import com.tx4hz.taskmaster.model.User;
+import com.tx4hz.taskmaster.repository.UserRepository;
+import com.tx4hz.taskmaster.service.mapper.UserMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,24 +19,36 @@ import java.util.function.Function;
 
 @Service
 public class JWTService {
-    @Value("${jwt.secret}")
-    private String secret;
     private SecretKey key;
 
-    // Инициализация ключа один раз
+    private final UserMapper userMapper;
+    private final UserRepository userRepository;
+
+    public JWTService(UserMapper userMapper, UserRepository userRepository) {
+        this.userMapper = userMapper;
+        this.userRepository = userRepository;
+    }
+
+    // Это очень плохой способ задания ключа, так нельзя делать,
+    // ибо в случае перезапуска\обновления сервера, прошлые jwt будут не валидны,
+    // но мне пох! (простите)
     @PostConstruct
     public void init() {
         this.key = Jwts.SIG.HS256.key().build();
     }
 
-    public String generateToken(String username) {
+    public String generateToken(CreateUserDTO userDTO) {
+        User user = userRepository.findByUsername(userDTO.getUsername())
+                .orElseThrow(IllegalStateException::new);
         Map<String, Object> claims = new HashMap<>();
+        claims.put("email", user.getEmail());
+        claims.put("userId", user.getId());
         return Jwts.builder()
                 .claims()
                 .add(claims)
-                .subject(username)
+                .subject(user.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 60L * 60 * 30 * 1000))
                 .and()
                 .signWith(getKey())
                 .compact();

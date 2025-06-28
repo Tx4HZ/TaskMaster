@@ -1,10 +1,7 @@
 package com.tx4hz.taskmaster.service;
 
-import com.tx4hz.taskmaster.dto.CreateProfileDTO;
 import com.tx4hz.taskmaster.dto.CreateProjectDTO;
 import com.tx4hz.taskmaster.dto.ProjectDTO;
-import com.tx4hz.taskmaster.dto.UserDTO;
-import com.tx4hz.taskmaster.model.Profile;
 import com.tx4hz.taskmaster.model.Project;
 import com.tx4hz.taskmaster.model.User;
 import com.tx4hz.taskmaster.repository.ProjectRepository;
@@ -17,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
