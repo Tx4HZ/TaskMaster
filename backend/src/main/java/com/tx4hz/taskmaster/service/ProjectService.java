@@ -61,17 +61,18 @@ public class ProjectService {
      */
     @Transactional
     public ProjectDTO updateProject(Long id, CreateProjectDTO updateProjectDTO) {
-        User owner = userRepository.findByUsername(
-                        SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new EntityNotFoundException("User not found with username or access denied"));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
 
-        Project project = projectRepository.findByOwner(owner)
-                .orElseThrow(() -> new EntityNotFoundException("Profile not found for user: "));
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
 
         if (!project.getOwner().getId().equals(owner.getId())) {
             throw new IllegalStateException("Access denied: user is not the project owner");
         }
 
+        projectMapper.updateEntity(project, updateProjectDTO);
         updateProjectFields(project, updateProjectDTO);
         Project updatedProject = projectRepository.save(project);
         return projectMapper.toDTO(updatedProject);
@@ -116,7 +117,7 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
-        if (isUserAssociatedWithProject(project, user, true)) {
+        if (isUserAssociatedWithProject(project, user)) {
             return projectMapper.toDTO(project);
         } else {
             throw new AccessDeniedException("User does not have permission to access this project");
@@ -168,6 +169,8 @@ public class ProjectService {
                         SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new EntityNotFoundException("User not found with username or access denied"));
 
+        System.out.println("DEBUG:");
+        System.out.println(user.toString());
         return projectRepository.findAllProjectsForUser(user.getId())
                 .stream()
                 .map(projectMapper::toDTO)

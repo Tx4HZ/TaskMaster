@@ -13,6 +13,6 @@ public class ProjectDTO {
     private Long id;
     private String title;
     private String summary;
-    private List<UserDTO> users;
-    private UserDTO owner;
+    private List<Long> usersID;
+    private Long ownerId;
 }

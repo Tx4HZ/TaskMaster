@@ -20,22 +20,34 @@ function ProfileForm({ profile, token, onCancel, onProfileCreated }) {
         }))
     }
 
-    const createProfile = async (e) => {
+    const createUpdateProfile = async (e) => {
         e.preventDefault()
         try {
             const payload = {
                 ...formData,
                 technologies: formData.technologies ? formData.technologies.split(",").map(tech => tech.trim()) : [],
             }
-
-            const response = await axios.post(
-                `/api/profiles`,
-                payload,
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            )
-            onProfileCreated(response.data.data);
+            let anyResponse
+            if (profile == null) {
+                const response = await axios.post(
+                    `/api/profiles`,
+                    payload,
+                    {
+                        headers: { Authorization: `Bearer ${token}` }
+                    }
+                )
+                anyResponse = response
+            } else {
+                const response = await axios.put(
+                    `/api/profiles`,
+                    payload,
+                    {
+                        headers: { Authorization: `Bearer ${token}` }
+                    }
+                )
+                anyResponse = response
+            }
+            onProfileCreated(anyResponse.data.data);
             onCancel()
         } catch (error) {
             console.error("Error creating profile:", error.response?.data || error.message);
@@ -44,7 +56,7 @@ function ProfileForm({ profile, token, onCancel, onProfileCreated }) {
 
 
     return (
-        <form onSubmit={createProfile} className="mt-6 space-y-4">
+        <form onSubmit={createUpdateProfile} className="mt-6 space-y-4">
             {error && (
                 <p className="text-mocha-red bg-mocha-red/10 p-3 rounded-lg text-center animate-pulse">
                     {error}
@@ -177,10 +189,10 @@ function ProfileForm({ profile, token, onCancel, onProfileCreated }) {
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="2"
+                    strokeWidth="2"
                     stroke="currentColor"
                     className="w-6 h-6 text-mocha-blue">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
                 </svg>
 
                 <div className="flex-1">
@@ -203,10 +215,10 @@ function ProfileForm({ profile, token, onCancel, onProfileCreated }) {
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="2"
+                    strokeWidth="2"
                     stroke="currentColor"
                     className="w-6 h-6 text-mocha-blue">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
                 </svg>
 
                 <div className="flex-1">

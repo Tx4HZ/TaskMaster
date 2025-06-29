@@ -1,6 +1,6 @@
 import axios from "axios"
 import { useContext, useEffect, useState } from "react"
-import { redirect, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { AuthContext } from "../../context/AuthContext"
 import ProfileForm from "./ProfileForm"
 
@@ -20,16 +20,22 @@ function Profile() {
         }
 
         const fetchProfile = async () => {
-            const response = await axios.get(`/api/users/${userId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            const { status, data, message } = response.data
             try {
-                setProfileData(data)
+                const response = await axios.get(`/api/users/${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                const { status, data, message } = response.data;
+
+                if (status === "success") {
+                    setProfileData(data);
+                } else {
+                    throw new Error(message || "Failed to load profile");
+                }
             } catch (err) {
-                setError(message || 'Failed to load profile')
-                logout()
-                navigate('/login')
+                setError(err.message || "Failed to load profile");
+                logout();
+                navigate("/login");
             }
         }
 
@@ -69,8 +75,8 @@ function Profile() {
     }
 
     return (
-        <div className="flex items-center justify-center bg-mocha-base p-4">
-            <div className="max-w-md w-full mx-auto mt-10 p-8 bg-mocha-surface0 rounded-2xl shadow-xl shadow-mocha-overlay0/30 transition-all duration-300 hover:shadow-mocha-overlay0/50">
+        <div className="flex flex-col items-center justify-start bg-mocha-base p-4 min-h-screen">
+            <div className="relative max-w-xl w-full mx-auto mt-20 p-8 bg-mocha-surface0 rounded-2xl shadow-xl shadow-mocha-overlay0/30 transition-all duration-300 hover:shadow-mocha-overlay0/50">
                 <h1 className="text-3xl font-extrabold text-mocha-text mb-6 text-center tracking-tight">
                     Ваш профиль
                 </h1>
@@ -104,32 +110,16 @@ function Profile() {
                                 </div>
                             </div>
                             {/* Дата рождения и возраст */}
-                            <div className="flex items-center gap-3 p-3 bg-mocha-surface1 rounded-lg hover:bg-mocha-surface1/80 transition-colors">
-                                <svg
-                                    className="w-6 h-6 text-mocha-blue"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                    />
-                                </svg>
-                                <div>
-                                    <p className="text-mocha-subtext0 font-medium">
-                                        {profileData.profile.birthday
-                                            ? `${new Date(profileData.profile.birthday).toLocaleDateString("ru-RU", {
-                                                day: "2-digit",
-                                                month: "2-digit",
-                                                year: "numeric",
-                                            })}, ${calculateAge(profileData.profile.birthday)} лет`
-                                            : "N/A"}
-                                    </p>
-                                </div>
+                            <div className="pl-12">
+                                <p className="text-mocha-subtext0 text-sm">
+                                    {profileData.profile.birthday
+                                        ? `${new Date(profileData.profile.birthday).toLocaleDateString("ru-RU", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                        })}, ${calculateAge(profileData.profile.birthday)} лет`
+                                        : "N/A"}
+                                </p>
                             </div>
                             {/* Логин и почта на одной линии */}
                             <div className="grid grid-cols-2 gap-4">
@@ -192,10 +182,10 @@ function Profile() {
                             )}
                             {/* Поле статуса с эффектом глубины */}
                             {profileData.profile.status && (
-                                <div className="p-4 bg-mocha-surface0 rounded-lg shadow-inner shadow-mocha-base/50 hover:bg-mocha-surface2/80 transition-colors">
+                                <div className="p-4 bg-mocha-surface2 rounded-lg shadow-inner shadow-mocha-overlay0/70 hover:bg-mocha-surface2/80 transition-colors">
                                     <div className="flex items-center gap-3">
                                         <svg
-                                            className="w-6 h-6 text-mocha-blue/50"
+                                            className="w-6 h-6 text-mocha-blue"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -219,20 +209,62 @@ function Profile() {
                     )}
                 </div>
                 {profileData.profile == null && !showForm ? (
+                    <>
+                        <div className="p-4 bg-mocha-surface0 rounded-lg shadow-inner shadow-mocha-base/50 hover:bg-mocha-surface2/80 transition-colors">
+                            <div className="flex flex-col items-center gap-3">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth="2"
+                                    stroke="currentColor"
+                                    className="w-12 h-12 text-mocha-blue"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                                    />
+                                </svg>
+                                <div>
+                                    <p className="text-mocha-text font-bold text-center">
+                                        Ваш профиль пока что пуст, давайте исправим это!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowForm(true)}
+                            className="mt-8 w-full p-3 bg-mocha-green text-mocha-base rounded-lg font-semibold hover:bg-mocha-green/80 hover:scale-105 transition-all duration-200 shadow-md"
+                        >
+                            Создать профиль
+                        </button>
+                    </>
+                ) : profileData.profile && !showForm ? (
                     <button
                         onClick={() => setShowForm(true)}
-                        className="mt-8 w-full p-3 bg-mocha-green text-mocha-base rounded-lg font-semibold hover:bg-mocha-green/80 hover:scale-105 transition-all duration-200 shadow-md"
+                        className="mt-8 w-full p-3 bg-mocha-blue text-mocha-base rounded-lg font-semibold hover:bg-mocha-blue/80 hover:scale-105 transition-all duration-200 shadow-md"
                     >
-                        Создать профиль
+                        Редактировать профиль
                     </button>
                 ) : null}
                 {showForm && (
-                    <ProfileForm
-                        profile={profileData.profile}
-                        token={token}
-                        onCancel={() => setShowForm(false)}
-                        onProfileCreated={handleProfileCreated}
-                    />
+                    <div
+                        className={`fixed inset-0 bg-mocha-base/80 flex items-center justify-center z-5 transition-all duration-500 ease-out ${showForm ? "opacity-100" : "opacity-0 pointer-events-none"
+                            }`}
+                    >
+                        <div
+                            className={`max-w-xl w-full p-8 bg-mocha-surface0 rounded-2xl shadow-xl shadow-mocha-overlay0/50 transform transition-transform duration-500 ease-out ${showForm ? "scale-100 animate-rubberPop" : "scale-50"
+                                }`}
+                        >
+                            <ProfileForm
+                                profile={profileData.profile}
+                                token={token}
+                                onCancel={() => setShowForm(false)}
+                                onProfileCreated={handleProfileCreated}
+                            />
+                        </div>
+                    </div>
                 )}
             </div>
         </div>

@@ -32,6 +32,7 @@ public class ProjectController {
      */
     @PostMapping
     public ResponseEntity<EntityResponse<ProjectDTO>> createProject(@RequestBody CreateProjectDTO createProjectDTO) {
+        System.out.println("Request body: " + createProjectDTO);
         try {
             ProjectDTO projectDTO = projectService.createProject(createProjectDTO);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -56,20 +57,21 @@ public class ProjectController {
      * @return a ResponseEntity containing the updated project DTO or an error message
      */
     @PutMapping("/{id}")
-    public ResponseEntity<EntityResponse<ProjectDTO>> updateProject(@PathVariable Long id, CreateProjectDTO updateProjectDTO) {
+    public ResponseEntity<EntityResponse<ProjectDTO>> updateProject(@PathVariable Long id, @RequestBody CreateProjectDTO updateProjectDTO) {
+        System.out.println("Request body: " + updateProjectDTO);
         try {
             ProjectDTO projectDTO = projectService.updateProject(id, updateProjectDTO);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(EntityResponse.success(projectDTO));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(EntityResponse.error("Failed to get projects: " + e.getMessage()));
+                    .body(EntityResponse.error("Failed to put projects: " + e.getMessage()));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(EntityResponse.error("Failed to get projects: " + e.getMessage()));
+                    .body(EntityResponse.error("Failed to put projects: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(EntityResponse.error("Failed to get projects: " + e.getMessage()));
+                    .body(EntityResponse.error("Failed to put projects: " + e.getMessage()));
         }
     }
 
@@ -105,7 +107,7 @@ public class ProjectController {
     @GetMapping("/all")
     public ResponseEntity<EntityResponse<List<ProjectDTO>>> getAllProject() {
         try {
-            List<ProjectDTO> projectDTO = projectService.getProjectsWithUserAsParticipant();
+            List<ProjectDTO> projectDTO = projectService.getAllProjectsForUser();
             return ResponseEntity.status(HttpStatus.OK)
                     .body(EntityResponse.success(projectDTO));
         } catch (EntityNotFoundException e) {
