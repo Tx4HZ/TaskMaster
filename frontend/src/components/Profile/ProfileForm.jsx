@@ -3,57 +3,51 @@ import { useState } from "react";
 
 function ProfileForm({ profile, token, onCancel, onProfileCreated }) {
     const [formData, setFormData] = useState({
-        name: profile != null ? profile.name : '',
-        surname: profile != null ? profile.surname : '',
-        patronymic: profile != null ? profile.patronymic : '',
-        birthday: profile != null ? profile.birthday : '',
-        status: profile != null ? profile.status : '',
-        technologies: profile != null ? profile.technologies : [],
-    })
+        name: profile?.name || "",
+        surname: profile?.surname || "",
+        patronymic: profile?.patronymic || "",
+        birthday: profile?.birthday || "",
+        status: profile?.status || "",
+        technologies: profile?.technologies?.join(", ") || "", // Convert array to string
+    });
     const [error, setError] = useState("");
 
     const handleChange = (e) => {
-        const { name, value } = e.target
+        const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
             [name]: value,
-        }))
-    }
+        }));
+    };
 
     const createUpdateProfile = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
         try {
             const payload = {
                 ...formData,
-                technologies: formData.technologies ? formData.technologies.split(",").map(tech => tech.trim()) : [],
-            }
-            let anyResponse
+                technologies: formData.technologies
+                    ? formData.technologies.split(",").map((tech) => tech.trim()).filter((tech) => tech)
+                    : [],
+            };
+            let anyResponse;
             if (profile == null) {
-                const response = await axios.post(
-                    `/api/profiles`,
-                    payload,
-                    {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
-                )
-                anyResponse = response
+                const response = await axios.post(`/api/profiles`, payload, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                anyResponse = response;
             } else {
-                const response = await axios.put(
-                    `/api/profiles`,
-                    payload,
-                    {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
-                )
-                anyResponse = response
+                const response = await axios.put(`/api/profiles`, payload, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                anyResponse = response;
             }
             onProfileCreated(anyResponse.data.data);
-            onCancel()
-        } catch (error) {
-            console.error("Error creating profile:", error.response?.data || error.message);
+            onCancel();
+        } catch (err) {
+            console.error("Error creating/updating profile:", err.response?.data || err.message);
+            setError(err.response?.data?.message || "Failed to create/update profile");
         }
-    }
-
+    };
 
     return (
         <form onSubmit={createUpdateProfile} className="mt-6 space-y-4">
@@ -191,10 +185,14 @@ function ProfileForm({ profile, token, onCancel, onProfileCreated }) {
                     viewBox="0 0 24 24"
                     strokeWidth="2"
                     stroke="currentColor"
-                    className="w-6 h-6 text-mocha-blue">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
+                    className="w-6 h-6 text-mocha-blue"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z"
+                    />
                 </svg>
-
                 <div className="flex-1">
                     <label htmlFor="status" className="block text-mocha-subtext0 text-sm">
                         Статус
@@ -217,10 +215,14 @@ function ProfileForm({ profile, token, onCancel, onProfileCreated }) {
                     viewBox="0 0 24 24"
                     strokeWidth="2"
                     stroke="currentColor"
-                    className="w-6 h-6 text-mocha-blue">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+                    className="w-6 h-6 text-mocha-blue"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25"
+                    />
                 </svg>
-
                 <div className="flex-1">
                     <label htmlFor="technologies" className="block text-mocha-subtext0 text-sm">
                         Технологии
